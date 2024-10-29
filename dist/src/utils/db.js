@@ -22,31 +22,38 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExpressServer = void 0;
-const express_1 = __importDefault(require("express"));
-const config = __importStar(require("../server_config.json"));
-class ExpressServer {
-    static server = null;
+exports.DatabaseUtil = void 0;
+const typeorm_1 = require("typeorm");
+const config = __importStar(require("../../server_config.json"));
+class DatabaseUtil {
     server_config = config;
     constructor() {
-        const port = this.server_config.port ?? 5000;
-        const app = (0, express_1.default)();
-        app.get("/ping", (req, res) => {
-            res.send("pong");
-        });
-        ExpressServer.server = app.listen(port, () => {
-            console.log(`Server is running on port ${port} with pid = ${process.pid}`);
-        });
+        this.connectDatabase();
     }
-    closeServer() {
-        ExpressServer.server.close(() => {
-            console.log("Server closed");
-            process.exit(0);
-        });
+    connectDatabase() {
+        try {
+            const db_config = this.server_config.db_config;
+            const AppDataSource = new typeorm_1.DataSource({
+                type: 'postgres',
+                host: db_config.host,
+                port: db_config.port,
+                username: db_config.username,
+                password: db_config.password,
+                database: db_config.dbname,
+                entities: [],
+                synchronize: true,
+                logging: false,
+            });
+            AppDataSource.initialize()
+                .then(() => {
+                console.log('Connected to the database');
+            })
+                .catch((error) => console.log(error));
+        }
+        catch (error) {
+            console.error('Error connecting to the database:', error);
+        }
     }
 }
-exports.ExpressServer = ExpressServer;
+exports.DatabaseUtil = DatabaseUtil;

@@ -21,7 +21,7 @@ export class ExpressServer {
   }
 
   // close the express server for safe on incaughtException
-  public closeSever(): void {
+  public closeServer(): void {
     ExpressServer.server.close(() => {
       console.log("Server closed");
       process.exit(0);
